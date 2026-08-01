@@ -1,7 +1,7 @@
 # 🚀 Production-Grade GitHub Actions CI/CD Pipeline
 
-![CI - Code Quality & Security Scan](https://github.com/YOUR_USERNAME/YOUR_REPO/actions/workflows/01-ci-pr-checks.yml/badge.svg)
-![CD - Build & Push](https://github.com/YOUR_USERNAME/YOUR_REPO/actions/workflows/02-cd-staging.yml/badge.svg)
+![CI - Code Quality & Security Scan](https://github.com/hadeer-elnaghy/production-pipeline/actions/workflows/01-ci-pr-checks.yml/badge.svg)
+![CD - Build & Push](https://github.com/hadeer-elnaghy/production-pipeline/actions/workflows/02-cd-staging.yml/badge.svg)
 
 An automated microservice CI/CD pipeline built with **GitHub Actions**, **Docker**, **Trivy Vulnerability Scanner**, and **Docker Hub**.
 
