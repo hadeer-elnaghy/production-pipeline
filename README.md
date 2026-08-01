@@ -63,4 +63,3 @@ An automated microservice CI/CD pipeline built with **GitHub Actions**, **Docker
    ```bash
    curl http://localhost:3000/health
    ```
-   
