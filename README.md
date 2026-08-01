@@ -1,65 +1,44 @@
-# 🚀 Production-Grade GitHub Actions CI/CD Pipeline
+# 🚀 Enterprise Node.js DevSecOps & Observability Pipeline
 
 ![CI - Code Quality & Security Scan](https://github.com/hadeer-elnaghy/production-pipeline/actions/workflows/01-ci-pr-checks.yml/badge.svg)
 ![CD - Build & Push](https://github.com/hadeer-elnaghy/production-pipeline/actions/workflows/02-cd-staging.yml/badge.svg)
 
-An automated microservice CI/CD pipeline built with **GitHub Actions**, **Docker**, **Trivy Vulnerability Scanner**, and **Docker Hub**.
+An end-to-end containerized Node.js microservice architecture featuring automated **GitHub Actions CI/CD pipelines**, **Trivy security vulnerability scanning**, **Winston structured JSON logging**, **Prometheus metrics extraction**, and **Grafana observability dashboards**.
 
 ---
 
-## 🛠️ Key Pipeline Features
+## 🛠️ Key Pipeline & Infrastructure Features
 
-- **Automated Pull Request Validation (CI):**
-  - Node.js multi-version test matrix (Node 18.x & 20.x).
-  - Security filesystem scanning using **Trivy** to catch CVE vulnerabilities before merging.
+- **Automated Quality & Vulnerability Gates (CI):**
+  - Multi-version testing matrix (Node 18.x & 20.x).
+  - Continuous filesystem scanning via **Trivy** to block high/critical CVEs.
 - **Continuous Staging Delivery (CD):**
-  - Automated Docker multi-stage builds triggered on `main` branch merges.
-  - Layer caching optimization (`type=gha`) for ultra-fast build times.
-  - Image tagging strategy based on short Git commit SHAs and `staging`/`latest` pointers pushed to **Docker Hub**.
-- **Production Gated Deployments:**
-  - Manual dispatch trigger with runtime tag parameters.
-  - Environment protection gates requiring manual approval before deployment execution.
-  - Secret value masking and post-deployment health check script verification.
+  - Optimized multi-stage Docker builds triggered on `main` branch pushes.
+  - BuildKit layer caching (`type=gha`) for fast image compilation.
+  - Automated deployment strategy pushing versioned SHA and `latest` tags to **Docker Hub**.
+- **Observability & Telemetry Stack:**
+  - **Prometheus Metric Collection:** Scrapes application metrics via `prom-client` at `GET /metrics`.
+  - **Grafana Monitoring Dashboard:** Real-time visibility into HTTP throughput, memory utilization (RSS/V8 Heap), service uptime, status codes, event loop lag, and $p_{95}$ response latency.
+  - **Structured JSON Logging:** Integrated `winston` logging engine appending unique `X-Request-ID` correlation identifiers for request tracing.
+- **Production Resilience:**
+  - Liveness (`/health/live`) and Readiness (`/health/ready`) probe endpoints.
+  - Graceful process termination (`SIGTERM`/`SIGINT`) handling active connection drains.
 
 ---
 
-## 📁 Architecture Overview
+## 📁 End-to-End Architecture Flow
 
 ```text
-  [ Developer PR ]
-         │
-         ▼
- ┌───────────────────────────────────┐
- │ 1. CI: Matrix Tests + Trivy Scan  │
- └─────────────────┬─────────────────┘
-                   │ (Merged to main)
-                   ▼
- ┌───────────────────────────────────┐
- │ 2. CD: Build & Push to Docker Hub │
- └─────────────────┬─────────────────┘
-                   │
-                   ▼
- ┌───────────────────────────────────┐
- │ 3. CD: Gated Production Deploy    │
- └───────────────────────────────────┘
-```
+ ┌────────────────┐       Scrapes /metrics        ┌─────────────────┐
+ │ Node.js Express│ ◄───────────────────────────  │   Prometheus    │
+ │ (Winston/Prom) │                               └────────┬────────┘
+ └───────┬────────┘                                        │ PromQL
+         │                                                 ▼
+         │ Logs (JSON + Correlation ID)           ┌─────────────────┐
+         └──────────────────────────────────────> │     Grafana     │
+                                                  │   Dashboards    │
+                                                  └─────────────────┘
 
----
+ ─────── CI/CD DEPLOYMENT PIPELINE ─────────────────────────────────
 
-## 🚦 Local Setup & Run
-
-1. Clone the repository:
-   ```bash
-   git clone [https://github.com/YOUR_USERNAME/YOUR_REPO.git](https://github.com/YOUR_USERNAME/YOUR_REPO.git)
-   cd YOUR_REPO
-   ```
-
-2. Run locally using Docker Compose:
-   ```bash
-   docker-compose up --build
-   ```
-
-3. Test the health endpoint:
-   ```bash
-   curl http://localhost:3000/health
-   ```
+ [ Developer PR ] ──> [ CI: Test + Trivy ] ──> [ Merge Main ] ──> [ CD: Push Docker Hub ]
