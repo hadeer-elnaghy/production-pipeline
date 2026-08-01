@@ -1,0 +1,42 @@
+name: 🚢 CD - Production Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Image tag to deploy (e.g., sha-abc1234)'
+        required: true
+        type: string
+      environment:
+        description: 'Target Deployment Environment'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - production
+
+jobs:
+  deploy-prod:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    environment: production # Triggers manual approval protection rule in GitHub UI
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Mask Sensitive Deployment Keys
+        run: |
+          echo "::add-mask::${{ secrets.PROD_API_KEY }}"
+          echo "Deploying image tag: ${{ inputs.release_tag }} to ${{ inputs.environment }}"
+
+      - name: Execute Deployment
+        run: |
+          echo "Pulling container ghcr.io/${{ github.repository }}:${{ inputs.release_tag }}..."
+          echo "Applying infrastructure manifests..."
+
+      - name: Run Health Checks
+        run: |
+          echo "Running post-deploy health check..."
+          chmod +x ./scripts/health-check.sh
+          ./scripts/health-check.sh

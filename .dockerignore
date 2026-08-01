@@ -1,0 +1,23 @@
+# Dependencies (will be re-installed inside the container)
+node_modules/
+
+# Git history & metadata
+.git/
+.gitignore
+
+# Documentation & Issue Templates
+.github/
+README.md
+LICENSE
+
+# Local configuration & secrets
+.env*
+docker-compose.yml
+
+# Log files
+*.log
+npm-debug.log*
+
+# Test files (not needed in production image)
+src/**/*.test.js
+coverage/

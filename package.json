@@ -1,0 +1,17 @@
+{
+  "name": "github-actions-production-pipeline",
+  "version": "1.0.0",
+  "description": "Production-grade CI/CD pipeline using GitHub Actions, Docker Hub, and Trivy security scanning",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "test": "jest"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "supertest": "^7.0.0"
+  }
+}
