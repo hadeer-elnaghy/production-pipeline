@@ -1,12 +1,21 @@
 const express = require('express');
 const client = require('prom-client');
 const winston = require('winston');
+const { ElasticsearchTransport } = require('winston-elasticsearch');
 const crypto = require('crypto');
 
 const app = express();
 app.use(express.json());
 
-// 1. Configure Winston for Structured JSON Logging
+// 1. Configure Winston Transports (Console + Elasticsearch)
+const esTransportOpts = {
+  level: 'info',
+  clientOpts: { 
+    node: process.env.ELASTICSEARCH_URL || 'http://elasticsearch:9200' 
+  },
+  indexPrefix: 'node-app-logs'
+};
+
 const logger = winston.createLogger({
   level: 'info',
   format: winston.format.combine(
@@ -14,7 +23,10 @@ const logger = winston.createLogger({
     winston.format.json()
   ),
   defaultMeta: { service: 'simple-node-app' },
-  transports: [new winston.transports.Console()]
+  transports: [
+    new winston.transports.Console(),
+    new ElasticsearchTransport(esTransportOpts)
+  ]
 });
 
 // 2. Setup Prometheus Metrics Collection
@@ -54,7 +66,7 @@ app.use((req, res, next) => {
     httpRequestCounter.labels(req.method, routeName, res.statusCode.toString()).inc();
     httpRequestDurationMicroseconds.labels(req.method, routeName, res.statusCode.toString()).observe(durationSeconds);
 
-    // Write Structured JSON Log
+    // Write Structured JSON Log (Sent to Console & Elasticsearch)
     logger.info({
       message: 'HTTP Request Handled',
       requestId: req.requestId,
@@ -95,7 +107,6 @@ app.get('/health/live', (req, res) => {
 });
 
 app.get('/health/ready', (req, res) => {
-  // Can be linked to DB connectivity checks in larger setups
   res.status(200).json({ status: 'READY', check: 'readiness' });
 });
 
@@ -104,7 +115,6 @@ app.get('/metrics', async (req, res) => {
   res.set('Content-Type', register.contentType);
   res.end(await register.metrics());
 });
-
 
 // Export app instance without starting the listener
 module.exports = app;
