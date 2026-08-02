@@ -3,7 +3,7 @@
 ![CI - Code Quality & Security Scan](https://github.com/hadeer-elnaghy/production-pipeline/actions/workflows/01-ci-pr-checks.yml/badge.svg)
 ![CD - Build & Push](https://github.com/hadeer-elnaghy/production-pipeline/actions/workflows/02-cd-staging.yml/badge.svg)
 
-An end-to-end containerized Node.js microservice architecture featuring automated **GitHub Actions CI/CD pipelines**, **Trivy security vulnerability scanning**, **Winston structured JSON logging**, **Prometheus metrics extraction**, and **Grafana observability dashboards**.
+An end-to-end containerized Node.js microservice architecture featuring automated **GitHub Actions CI/CD pipelines**, **Trivy security vulnerability scanning**, **Winston structured JSON logging**, **Elasticsearch centralized log storage**, **Prometheus metrics extraction**, and **Grafana observability dashboards**.
 
 ---
 
@@ -18,7 +18,8 @@ An end-to-end containerized Node.js microservice architecture featuring automate
   - Automated deployment strategy pushing versioned SHA and `latest` tags to **Docker Hub**.
 - **Observability & Telemetry Stack:**
   - **Prometheus Metric Collection:** Scrapes application metrics via `prom-client` at `GET /metrics`.
-  - **Grafana Monitoring Dashboard:** Real-time visibility into HTTP throughput, memory utilization (RSS/V8 Heap), service uptime, status codes, event loop lag, and $p_{95}$ response latency.
+  - **Elasticsearch Log Ingestion:** Centralized log store indexing structured `winston-elasticsearch` transports for rapid search and historical querying.
+  - **Grafana Monitoring Dashboard:** Unified observability UI displaying side-by-side HTTP throughput, memory utilization (RSS/V8 Heap), status code breakdowns, $p_{95}$ request latency, and real-time Elasticsearch application log streams.
   - **Structured JSON Logging:** Integrated `winston` logging engine appending unique `X-Request-ID` correlation identifiers for request tracing.
 - **Production Resilience:**
   - Liveness (`/health/live`) and Readiness (`/health/ready`) probe endpoints.
@@ -29,15 +30,15 @@ An end-to-end containerized Node.js microservice architecture featuring automate
 ## 📁 End-to-End Architecture Flow
 
 ```text
- ┌────────────────┐       Scrapes /metrics        ┌─────────────────┐
- │ Node.js Express│ ◄───────────────────────────  │   Prometheus    │
- │ (Winston/Prom) │                               └────────┬────────┘
- └───────┬────────┘                                        │ PromQL
-         │                                                 ▼
-         │ Logs (JSON + Correlation ID)           ┌─────────────────┐
-         └──────────────────────────────────────> │     Grafana     │
-                                                  │   Dashboards    │
-                                                  └─────────────────┘
+                               Scrapes /metrics       ┌─────────────────┐
+ ┌────────────────┐ ◄──────────────────────────────── │   Prometheus    │
+ │ Node.js Express│                                   └────────┬────────┘
+ │ (Winston/Prom) │                                            │ PromQL
+ └───────┬────────┘                                            ▼
+         │ Logs (Winston Transport)   ┌───────────────┐   ┌─────────────────┐
+         └──────────────────────────> │ Elasticsearch │──>│     Grafana     │
+                                      │ (Log Storage) │   │   Dashboards    │
+                                      └───────────────┘   └─────────────────┘
 
  ─────── CI/CD DEPLOYMENT PIPELINE ─────────────────────────────────
 
